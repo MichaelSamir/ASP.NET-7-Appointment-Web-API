@@ -1,4 +1,7 @@
 using AppointmentWebApi.Core.DbContext;
+using AppointmentWebApi.Core.Entities;
+using AppointmentWebApi.Core.Interfaces;
+using AppointmentWebApi.Core.Services;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
@@ -23,7 +26,7 @@ builder.Services.AddDbContext<ApplicationDbContext>(options =>
 
 // Add Identity
 builder.Services
-    .AddIdentity<IdentityUser, IdentityRole>()
+    .AddIdentity<User, IdentityRole>()
     .AddEntityFrameworkStores<ApplicationDbContext>()
     .AddDefaultTokenProviders();
 
@@ -59,6 +62,9 @@ builder.Services
             IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(builder.Configuration["JWT:Secret"]))
         };
     });
+
+// Add application dependency injection
+builder.Services.AddScoped<IAuthService, AuthService>();
 
 var app = builder.Build();
 

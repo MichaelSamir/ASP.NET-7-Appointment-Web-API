@@ -4,6 +4,7 @@ using AppointmentWebApi.Core.DbContext;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -11,9 +12,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace AppointmentWebApi.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20240208124414_MakeLinkedIdStringInImage")]
+    partial class MakeLinkedIdStringInImage
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -21,48 +24,6 @@ namespace AppointmentWebApi.Migrations
                 .HasAnnotation("Relational:MaxIdentifierLength", 128);
 
             SqlServerModelBuilderExtensions.UseIdentityColumns(modelBuilder);
-
-            modelBuilder.Entity("AppointmentWebApi.Core.Entities.Appointment", b =>
-                {
-                    b.Property<long>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("bigint");
-
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<long>("Id"));
-
-                    b.Property<bool>("Active")
-                        .HasColumnType("bit");
-
-                    b.Property<bool>("Approved")
-                        .HasColumnType("bit");
-
-                    b.Property<DateTime>("Created")
-                        .HasColumnType("datetime2");
-
-                    b.Property<long>("HallId")
-                        .HasColumnType("bigint");
-
-                    b.Property<DateTime?>("Modified")
-                        .HasColumnType("datetime2");
-
-                    b.Property<DateTime>("ReservationFromDateTime")
-                        .HasColumnType("datetime2");
-
-                    b.Property<DateTime>("ReservationToDateTime")
-                        .HasColumnType("datetime2");
-
-                    b.Property<string>("UserId")
-                        .HasMaxLength(450)
-                        .HasColumnType("nvarchar(450)");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("HallId");
-
-                    b.HasIndex("UserId");
-
-                    b.ToTable("Appointments");
-                });
 
             modelBuilder.Entity("AppointmentWebApi.Core.Entities.Building", b =>
                 {
@@ -134,16 +95,6 @@ namespace AppointmentWebApi.Migrations
 
                     b.Property<int>("NoOfChairs")
                         .HasColumnType("int");
-
-                    b.Property<string>("ReservationDays")
-                        .HasMaxLength(100)
-                        .HasColumnType("nvarchar(100)");
-
-                    b.Property<DateTime>("ReservationFromTime")
-                        .HasColumnType("datetime2");
-
-                    b.Property<DateTime>("ReservationToTime")
-                        .HasColumnType("datetime2");
 
                     b.HasKey("Id");
 
@@ -394,23 +345,6 @@ namespace AppointmentWebApi.Migrations
                     b.HasKey("UserId", "LoginProvider", "Name");
 
                     b.ToTable("AspNetUserTokens", (string)null);
-                });
-
-            modelBuilder.Entity("AppointmentWebApi.Core.Entities.Appointment", b =>
-                {
-                    b.HasOne("AppointmentWebApi.Core.Entities.Hall", "Hall")
-                        .WithMany()
-                        .HasForeignKey("HallId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.HasOne("AppointmentWebApi.Core.Entities.User", "User")
-                        .WithMany()
-                        .HasForeignKey("UserId");
-
-                    b.Navigation("Hall");
-
-                    b.Navigation("User");
                 });
 
             modelBuilder.Entity("AppointmentWebApi.Core.Entities.Hall", b =>

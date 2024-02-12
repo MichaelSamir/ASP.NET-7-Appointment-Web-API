@@ -5,6 +5,7 @@ using AppointmentWebApi.Core.Services;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.IdentityModel.Tokens;
 using System.Text;
 
@@ -63,8 +64,8 @@ builder.Services
         };
     });
 
-// Add application dependency injection
-builder.Services.AddScoped<IAuthService, AuthService>();
+// Add application dependency injection ---- use tryAddScoped to not to override on this service (read-only)
+builder.Services.TryAddScoped<IAuthService, AuthService>();
 
 var app = builder.Build();
 

@@ -67,6 +67,9 @@ builder.Services
 // Add application dependency injection ---- use tryAddScoped to not to override on this service (read-only)
 builder.Services.TryAddScoped<IAuthService, AuthService>();
 
+builder.Services.TryAddScoped<IHallService, HallService>();
+
+
 var app = builder.Build();
 
 // Configure the HTTP request pipeline.

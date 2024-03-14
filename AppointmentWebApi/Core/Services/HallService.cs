@@ -5,6 +5,7 @@ using AppointmentWebApi.Core.Interfaces;
 using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.EntityFrameworkCore;
 using System;
+using System.Dynamic;
 using System.Net;
 
 namespace AppointmentWebApi.Core.Services
@@ -17,11 +18,80 @@ namespace AppointmentWebApi.Core.Services
         {
             _context = context;
         }
-        public async Task<DataResultDto> SearchHallByIdAndDateTimeAsync(long hallId, DateTime reservationDateTime)
-        {
-            var hallInDb = await _context.Halls.FindAsync(hallId);
 
+        public async Task<DataResultDto> GetHallAsync(HallDto hallInfo)
+        {
             DataResultDto resultDto = new DataResultDto();
+
+            if (hallInfo == null)
+            {
+                resultDto.StatusCode = ((int)HttpStatusCode.BadRequest).ToString();
+                resultDto.IsSucceeded = false;
+                resultDto.HasErrors = true;
+                resultDto.Result = "Invalid hall Info";
+                return resultDto;
+            }
+
+            if (hallInfo.BuildingId <= 0)
+            {
+                resultDto.StatusCode = ((int)HttpStatusCode.BadRequest).ToString();
+                resultDto.IsSucceeded = false;
+                resultDto.HasErrors = true;
+                resultDto.Result = "Invalid BuildingId";
+                return resultDto;
+            }
+
+            if (hallInfo.FloorNumber <= 0)
+            {
+                resultDto.StatusCode = ((int)HttpStatusCode.BadRequest).ToString();
+                resultDto.IsSucceeded = false;
+                resultDto.HasErrors = true;
+                resultDto.Result = "Invalid FloorNumber";
+                return resultDto;
+            }
+
+            var availableHalls = await _context.Halls.Where(h =>
+            h.BuildingId == hallInfo.BuildingId && h.FloorNumber == hallInfo.FloorNumber && h.Active == true).ToListAsync();
+
+            resultDto.StatusCode = ((int)HttpStatusCode.OK).ToString();
+            resultDto.IsSucceeded = true;
+            resultDto.Result = availableHalls;
+
+            return resultDto;
+        }
+
+        public async Task<DataResultDto> SearchHallByIdAndDateTimeAsync(SearchHallDto searchHallInfo)
+        {
+            DataResultDto resultDto = new DataResultDto();
+
+            if (searchHallInfo == null)
+            {
+                resultDto.StatusCode = ((int)HttpStatusCode.BadRequest).ToString();
+                resultDto.IsSucceeded = false;
+                resultDto.HasErrors = true;
+                resultDto.Result = "Invalid searchHallInfo";
+                return resultDto;
+            }
+
+            if (searchHallInfo.HallId <= 0)
+            {
+                resultDto.StatusCode = ((int)HttpStatusCode.BadRequest).ToString();
+                resultDto.IsSucceeded = false;
+                resultDto.HasErrors = true;
+                resultDto.Result = "Invalid HallId";
+                return resultDto;
+            }
+
+            if (searchHallInfo.ReservationDateTime <= DateTime.MinValue || searchHallInfo.ReservationDateTime <= DateTime.Now)
+            {
+                resultDto.StatusCode = ((int)HttpStatusCode.BadRequest).ToString();
+                resultDto.IsSucceeded = false;
+                resultDto.HasErrors = true;
+                resultDto.Result = "Invalid ReservationDateTime";
+                return resultDto;
+            }
+
+            var hallInDb = await _context.Halls.FindAsync(searchHallInfo.HallId);
 
             if (hallInDb == null)
             {
@@ -31,19 +101,11 @@ namespace AppointmentWebApi.Core.Services
                 return resultDto;
             }
 
-            if(reservationDateTime == DateTime.MinValue)
-            {
-                resultDto.StatusCode = ((int)HttpStatusCode.BadRequest).ToString();
-                resultDto.IsSucceeded = true;
-                resultDto.Result = "Reservation DateTime not valid";
-                return resultDto;
-            }
-
             var appointment = _context.Appointments
-                .Where(a => (a.ReservationFromDateTime == reservationDateTime
-                         || (a.ReservationFromDateTime < reservationDateTime && reservationDateTime < a.ReservationFromDateTime))
+                .Where(a => (a.ReservationFromDateTime == searchHallInfo.ReservationDateTime
+                         || (a.ReservationFromDateTime < searchHallInfo.ReservationDateTime && searchHallInfo.ReservationDateTime < a.ReservationFromDateTime))
                          && a.Active == true
-                         && a.HallId == hallId);
+                         && a.HallId == searchHallInfo.HallId);
 
             if (appointment == null || appointment.Count() <= 0)
             {
@@ -65,21 +127,30 @@ namespace AppointmentWebApi.Core.Services
             return resultDto;
         }
 
-        public async Task<DataResultDto> SearchHallsByDateTimeAsync(DateTime reservationDateTime)
+        public async Task<DataResultDto> SearchHallsByDateTimeAsync(SearchHallDto searchHallInfo)
         {
             DataResultDto resultDto = new DataResultDto();
-
-            if (reservationDateTime == DateTime.MinValue)
+            if (searchHallInfo == null)
             {
                 resultDto.StatusCode = ((int)HttpStatusCode.BadRequest).ToString();
-                resultDto.IsSucceeded = true;
-                resultDto.Result = "Reservation DateTime not valid";
+                resultDto.IsSucceeded = false;
+                resultDto.HasErrors = true;
+                resultDto.Result = "Invalid searchHallInfo";
+                return resultDto;
+            }
+
+            if (searchHallInfo.ReservationDateTime <= DateTime.MinValue || searchHallInfo.ReservationDateTime <= DateTime.Now)
+            {
+                resultDto.StatusCode = ((int)HttpStatusCode.BadRequest).ToString();
+                resultDto.IsSucceeded = false;
+                resultDto.HasErrors = true;
+                resultDto.Result = "Invalid ReservationDateTime";
                 return resultDto;
             }
 
             var appointments = await _context.Appointments
-                .Where(a => (a.ReservationFromDateTime == reservationDateTime
-                         || (a.ReservationFromDateTime < reservationDateTime && reservationDateTime < a.ReservationFromDateTime))
+                .Where(a => (a.ReservationFromDateTime == searchHallInfo.ReservationDateTime
+                         || (a.ReservationFromDateTime < searchHallInfo.ReservationDateTime && searchHallInfo.ReservationDateTime < a.ReservationFromDateTime))
                          && a.Active == true).ToListAsync();
 
 

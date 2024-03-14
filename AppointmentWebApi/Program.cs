@@ -68,6 +68,8 @@ builder.Services
 builder.Services.TryAddScoped<IAuthService, AuthService>();
 
 builder.Services.TryAddScoped<IHallService, HallService>();
+builder.Services.TryAddScoped<IBuildingService, BuildingService>();
+builder.Services.TryAddScoped<IAppointmentService, AppointmentService>();
 
 
 var app = builder.Build();
